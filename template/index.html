@@ -17,6 +17,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                flex-direction: column;
             }
             .section{
                 display: flex;
@@ -31,16 +32,38 @@
             <h2>Transcript Generator</h2>
         </div>
 
-        <div class = "container pt-5 section">
-            <form action="{% url 'fileapp:range-transcript' %}" method="POST">
+        <div class = "container pt-2 section">
+            <form action="{% url 'fileapp:range-transcript' %}" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                <input type = "text" class = "mr-2" placeholder = "Enter Roll Number range" name = "roll_range" required />
-                <button type = "submit" class = "btn btn-primary">Generate Transcripts of the range </button>
+                <div class = "form-group">
+                    <label for = "seal">Browse for Seal</label>
+                    <input type = "file" multiple name = "seal" >
+                </div>
+                <div class = "form-group">
+                    <label for = "signature">Browse for Signature</label>
+                    <input type = "file" multiple name = "signature" >
+                </div>
+                <div class = "form-group">
+                    <input type = "text" class = "mr-2" placeholder = "Enter Roll Number range" name = "roll_range" required />
+                    <button type = "submit" class = "btn btn-primary">Generate Transcripts of the range </button>
+                </div>
             </form>
         </div>
-        <div class = "form-group my-3 section">
-            <form action = '{% url 'fileapp:all-transcript' %}'>
-                <button type = "submit" class = "btn btn-primary">Generate all Transcripts</button>
+
+        <div class = "container pt-3 section">
+            <form action="{% url 'fileapp:all-transcript' %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class = "form-group">
+                    <label for = "seal">Browse for Seal</label>
+                    <input type = "file" multiple name = "seal" >
+                </div>
+                <div class = "form-group">
+                    <label for = "signature">Browse for Signature</label>
+                    <input type = "file" multiple name = "signature" >
+                </div>
+                <div class = "form-group">
+                    <button type = "submit" class = "btn btn-primary">Generate all Transcripts</button>
+                </div>
             </form>
         </div>
 

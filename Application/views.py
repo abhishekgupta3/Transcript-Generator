@@ -4,6 +4,7 @@ from fpdf import FPDF
 from datetime import datetime, date
 from django.shortcuts import render
 from django.http import request, response
+from django.core.files.storage import FileSystemStorage
 
 # CONSTANTS
 WIDTH = 420
@@ -39,6 +40,8 @@ class PDF(FPDF):
         self.set_xy(353, 37.5)
         self.cell(50, 0, 'INTERIM TRANSCRIPT', 0, 1, 'C')
         self.line(363, 39, 393, 39) # horizontal line for 'INTERIM TRANSCRIPT'
+
+        self.image('static/iitp_text.png', 63, 13, 290, 27) # iitp text
         
     def info_block(self, roll, name):
         self.rect(92, 42, 240, 13) # Inner Information Block
@@ -47,30 +50,39 @@ class PDF(FPDF):
         self.set_xy(92, 45)
         self.cell(21, 0, 'Roll No:', 0, 1, 'C')
 
+        self.set_font('Arial', '', 10)
         self.set_xy(115, 45)
         self.cell(20, 0, roll, 0, 1, 'C')
 
+        self.set_font('Arial', 'B', 10)
         self.set_xy(165, 45)
         self.cell(10, 0, 'Name:', 0, 1)
 
+        self.set_font('Arial', '', 10)
         self.set_xy(180, 45)
         self.cell(40, 0, name, 0, 1)
 
+        self.set_font('Arial', 'B', 10)
         self.set_xy(280, 45)
         self.cell(22, 0, 'Year of Admission:', 0, 1, 'C')
 
+        self.set_font('Arial', '', 10)
         self.set_xy(302, 45)
         self.cell(20, 0, f'20{roll[0 : 2]}', 0, 1, 'C')
 
+        self.set_font('Arial', 'B', 10)
         self.set_xy(165, 51)
         self.cell(10, 0, 'Course:', 0, 1)
 
+        self.set_font('Arial', '', 10)
         self.set_xy(180, 51)
         self.cell(50, 0, course_name[roll[4 : 6]], 0, 1)
 
+        self.set_font('Arial', 'B', 10)
         self.set_xy(92, 51)
         self.cell(28, 0, 'Programme:', 0, 1, 'C')
 
+        self.set_font('Arial', '', 10)
         self.set_xy(120, 51)
         self.cell(35, 0, 'Bachelor of Technology', 0, 1, 'C')
 
@@ -84,7 +96,10 @@ class PDF(FPDF):
         #sem block
         self.rect(semX, semY, 122, 5)
 
-        self.set_font('Arial', 'B', 7.5)
+        if l[0] == 'Sub. Code':
+            self.set_font('Arial', 'B', 7.5)
+        else:
+            self.set_font('Arial', '', 7.5)
         self.line(semX + 15.5, semY, semX + 15.5, semY + 5) # sub code
         self.set_xy(semX, semY + 2.5)
         self.cell(15.5, 0, l[0], 0, 1, 'C')
@@ -101,6 +116,7 @@ class PDF(FPDF):
         self.set_xy(semX + 105.5, semY + 2.5)
         self.cell(8.25, 0, l[3], 0, 1, 'C')
 
+        self.set_font('Arial', 'B', 7.5)
         self.set_xy(semX + 113.75, semY + 2.5) # grade
         self.cell(8.25, 0, l[4], 0, 1, 'C')
 
@@ -148,8 +164,14 @@ class PDF(FPDF):
         self.cell(45, 0, f'{d2}, {current_time}', 0, 1, 'C')
 
         self.line(45, newY + 3, 91, newY + 3) # horizontal line
-        self.line(347, newY, 395, newY) # horizontal line
 
+        if os.path.exists('media/seal.png'):
+            self.image('media/seal.png', 180, newY - 25, 45, 40)
+
+        if os.path.exists('media/signature.png'):
+            self.image('media/signature.png', 350, newY - 10, 40, 15)
+
+        self.line(347, newY, 395, newY) # horizontal line
         self.set_xy(345, newY + 4)
         self.cell(46, 0, 'Assistant Registrar (Academic)', 0, 1)
 
@@ -272,13 +294,34 @@ def generateTranscript(type, list_of_roll = []):
 # Create your views here.
 def index(request):
     context = {}      
+    if os.path.exists('media'):
+        dir = 'media'
+        for f in os.listdir(dir):
+            os.remove(os.path.join(dir, f))
+
     if not os.path.exists('transcriptsIITP'):
         os.makedirs('transcriptsIITP')  
     return render(request, "index.html", context)
 
 # generate range of transcripts
 def range_transcript(request):
+    if os.path.exists('media'):
+        dir = 'media'
+        for f in os.listdir(dir):
+            os.remove(os.path.join(dir, f))
+    fs = FileSystemStorage()
+    try:
+        file1 = request.FILES["seal"]
+        fs.save('seal.png', file1)
+    except:
+        pass
+    try:
+        file2 = request.FILES["signature"]
+        fs.save('signature.png', file2)
+    except:
+        pass
     roll_range = request.POST.get("roll_range")
+
     ls = roll_range.split('-')
     start = ls[0][6 : 8]
     end = ls[1][6 : 8]
@@ -306,6 +349,22 @@ def range_transcript(request):
 
 # generate all transcripts
 def all_transcript(request):
+    if os.path.exists('media'):
+        dir = 'media'
+        for f in os.listdir(dir):
+            os.remove(os.path.join(dir, f))
+    fs = FileSystemStorage()
+    try:
+        file1 = request.FILES["seal"]
+        fs.save('seal.png', file1)
+    except:
+        pass
+    try:
+        file2 = request.FILES["signature"]
+        fs.save('signature.png', file2)
+    except:
+        pass
+
     try:
         generateTranscript(2)
     except:

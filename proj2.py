@@ -34,6 +34,8 @@ class PDF(FPDF):
         self.set_xy(353, 37.5)
         self.cell(50, 0, 'INTERIM TRANSCRIPT', 0, 1, 'C')
         self.line(363, 39, 393, 39) # horizontal line for 'INTERIM TRANSCRIPT'
+
+        self.image('static/iitp_text.png', 63, 13, 290, 27)
         
     def info_block(self, roll, name):
         self.rect(92, 42, 240, 13) # Inner Information Block
