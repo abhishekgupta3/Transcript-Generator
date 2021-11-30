@@ -30,15 +30,18 @@
         <div class = "container my-5"> 
             <h2>Transcript Generator</h2>
         </div>
+
         <div class = "container pt-5 section">
-            <form action="" method="POST">
+            <form action="{% url 'fileapp:range-transcript' %}" method="POST">
                 {% csrf_token %}
                 <input type = "text" class = "mr-2" placeholder = "Enter Roll Number range" name = "roll_range" required />
                 <button type = "submit" class = "btn btn-primary">Generate Transcripts of the range </button>
             </form>
         </div>
         <div class = "form-group my-3 section">
-            <button type = "submit" class = "btn btn-primary">Generate all Transcripts</button>
+            <form action = '{% url 'fileapp:all-transcript' %}'>
+                <button type = "submit" class = "btn btn-primary">Generate all Transcripts</button>
+            </form>
         </div>
 
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

@@ -10,6 +10,7 @@ course_name = {
     'EE' : 'Electrical Engineering',
     'ME' : 'Mechanical Engineering'
 }
+
 grades = {'AA': 10, 'AB': 9, 'BB': 8, 'BC': 7, 'CC': 6, 'CD': 5, 'DD': 4, 'DD*': 4, 'F': 0, 'F*': 0, 'I': 0}
 
 class PDF(FPDF):
@@ -68,6 +69,36 @@ class PDF(FPDF):
         self.set_xy(120, 51)
         self.cell(35, 0, 'Bachelor of Technology', 0, 1, 'C')
 
+    def sem_num(self, sem_no, semX, semY):
+        self.set_font('Arial', 'B', 9)
+        self.set_xy(semX + 5.5, semY)
+        self.cell(5, 0, f'Semester {sem_no}', 0, 1, 'C')
+        self.line(semX, semY + 1.5, semX+ 16.5, semY + 1.5) # horizontal line
+
+    def sem(self, semX, semY,  sem_no, l = ['Sub. Code', 'Subject Name', 'L-T-P', 'CRD', 'GRD']):
+        #sem block
+        self.rect(semX, semY, 122, 5)
+
+        self.set_font('Arial', 'B', 7.5)
+        self.line(semX + 15.5, semY, semX + 15.5, semY + 5) # sub code
+        self.set_xy(semX, semY + 2.5)
+        self.cell(15.5, 0, l[0], 0, 1, 'C')
+
+        self.line(semX + 94.5, semY, semX + 94.5, semY + 5) # sub name
+        self.set_xy(semX + 15.5, semY + 2.5)
+        self.cell(79, 0, l[1], 0, 1, 'C')
+
+        self.line(semX + 105.5, semY, semX + 105.5, semY + 5) # ltp
+        self.set_xy(semX + 94.5, semY + 2.5)
+        self.cell(11, 0, l[2], 0, 1, 'C')
+
+        self.line(semX + 113.75, semY, semX + 113.75, semY + 5) # crd
+        self.set_xy(semX + 105.5, semY + 2.5)
+        self.cell(8.25, 0, l[3], 0, 1, 'C')
+
+        self.set_xy(semX + 113.75, semY + 2.5) # grade
+        self.cell(8.25, 0, l[4], 0, 1, 'C')
+
     def grade(self, semX, semY, credits, spi, cpi):
         # Grade Block
         self.rect(semX, semY + 2, 90, 6)
@@ -117,44 +148,6 @@ class PDF(FPDF):
         self.set_xy(345, newY + 4)
         self.cell(46, 0, 'Assistant Registrar (Academic)', 0, 1)
 
-
-pdf = PDF(orientation='L', unit='mm', format='A3')
-pdf.add_page()
-
-def sem_num(sem_no, semX, semY):
-    pdf.set_font('Arial', 'B', 9)
-    pdf.set_xy(semX + 5.5, semY)
-    pdf.cell(5, 0, f'Semester {sem_no}', 0, 1, 'C')
-    pdf.line(semX, semY + 1.5, semX+ 16.5, semY + 1.5) # horizontal line 
-
-
-
-def sem(semX, semY,  sem_no, l = ['Sub. Code', 'Subject Name', 'L-T-P', 'CRD', 'GRD']):
-    #sem block
-    pdf.rect(semX, semY, 122, 5)
-
-    pdf.set_font('Arial', 'B', 7.5)
-    pdf.line(semX + 15.5, semY, semX + 15.5, semY + 5) # sub code
-    pdf.set_xy(semX, semY + 2.5)
-    pdf.cell(15.5, 0, l[0], 0, 1, 'C')
-
-    pdf.line(semX + 94.5, semY, semX + 94.5, semY + 5) # sub name
-    pdf.set_xy(semX + 15.5, semY + 2.5)
-    pdf.cell(79, 0, l[1], 0, 1, 'C')
-
-    pdf.line(semX + 105.5, semY, semX + 105.5, semY + 5) # ltp
-    pdf.set_xy(semX + 94.5, semY + 2.5)
-    pdf.cell(11, 0, l[2], 0, 1, 'C')
-
-    pdf.line(semX + 113.75, semY, semX + 113.75, semY + 5) # crd
-    pdf.set_xy(semX + 105.5, semY + 2.5)
-    pdf.cell(8.25, 0, l[3], 0, 1, 'C')
-
-    pdf.set_xy(semX + 113.75, semY + 2.5) # grade
-    pdf.cell(8.25, 0, l[4], 0, 1, 'C')
-
-# print(pdf.get_x(), pdf.get_y())
-
 sub_info = {} # map of subject name & subject ltp 
 with open('sample_input/subjects_master.csv') as csvFile:
     f = csv.reader(csvFile)
@@ -168,31 +161,37 @@ stud_master = {} # map of student name & subject rollno
 with open('sample_input/names-roll.csv') as csvFile:
     f = csv.reader(csvFile)
     for row in f:
-        stud_master[row[0]] = row[1]
+        roll = row[0].upper()
+        stud_master[roll] = row[1].upper()
 
 courses_cnt = {} # map for count of courses each sem
 with open('sample_input/grades.csv') as csvFile:
     f = csv.reader(csvFile)
     for row in f:
         if row[0] != 'Roll':
+            roll = row[0].upper()
             sem_no = int(row[1])
-            if row[0] not in courses_cnt:
-                courses_cnt[row[0]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            courses_cnt[row[0]][sem_no - 1] += 1
+            if roll not in courses_cnt:
+                courses_cnt[roll] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            courses_cnt[roll][sem_no - 1] += 1
 
-pos = [[17.5, 63], [145, 63], [272.5, 63]]
 cnt = 0
 with open('sample_input/grades.csv') as csvFile:
     f = csv.reader(csvFile)
     for row in f:
-        if row[0] == '0501CS03':
+        if row[0] != 'Roll':
+            roll = row[0].upper()
             sem_no = int(row[1])
 
             if cnt == 0:
                 if sem_no == 1:
-                    pdf.info_block(row[0], stud_master[row[0]])
-                    sem_num(1, pos[0][0], pos[0][1] - 3)
-                    sem(pos[0][0], pos[0][1], 1)
+                    pos = [[17.5, 63], [145, 63], [272.5, 63]]
+                    cnt = 0
+                    pdf = PDF(orientation='L', unit='mm', format='A3')
+                    pdf.add_page()
+                    pdf.info_block(roll, stud_master[roll])
+                    pdf.sem_num(1, pos[0][0], pos[0][1] - 3)
+                    pdf.sem(pos[0][0], pos[0][1], 1)
                     cur_credits = 0
                     val = 0
                     credits = []
@@ -202,14 +201,14 @@ with open('sample_input/grades.csv') as csvFile:
                 elif sem_no == 2 or sem_no == 5 or sem_no == 8:
                     cur_credits = 0
                     val = 0
-                    sem_num(sem_no, pos[1][0], pos[1][1] - 3)
-                    sem(pos[1][0], pos[1][1], sem_no)
+                    pdf.sem_num(sem_no, pos[1][0], pos[1][1] - 3)
+                    pdf.sem(pos[1][0], pos[1][1], sem_no)
                     pos[1][1] += 5
                 elif sem_no == 3 or sem_no == 6:
                     cur_credits = 0
                     val = 0
-                    sem_num(sem_no, pos[2][0], pos[2][1] - 3)
-                    sem(pos[2][0], pos[2][1], sem_no)
+                    pdf.sem_num(sem_no, pos[2][0], pos[2][1] - 3)
+                    pdf.sem(pos[2][0], pos[2][1], sem_no)
                     pos[2][1] += 5
                 elif sem_no == 4 or sem_no == 7:
                     cur_credits = 0
@@ -217,27 +216,29 @@ with open('sample_input/grades.csv') as csvFile:
                     curY = max(pos[0][1], pos[1][1], pos[2][1])
                     pdf.line(13, curY + 10, 403, curY + 10)
                     curY = curY + 10
-                    sem_num(sem_no, pos[0][0], curY + 4)
+                    pdf.sem_num(sem_no, pos[0][0], curY + 4)
                     pos[0][1] = curY + 7
                     pos[1][1] = curY + 7
                     pos[2][1] = curY + 7
 
-                    sem(pos[0][0], pos[0][1], sem_no)
+                    pdf.sem(pos[0][0], pos[0][1], sem_no)
                     pos[0][1] += 5
                 
             if sem_no <= 8:
                 l = [row[2], sub_info[row[2]][0], sub_info[row[2]][1], row[3], row[4]]
-                sem(pos[(sem_no - 1) % 3][0], pos[(sem_no - 1) % 3][1], row[1], l)
+                pdf.sem(pos[(sem_no - 1) % 3][0], pos[(sem_no - 1) % 3][1], row[1], l)
                 pos[(sem_no - 1) % 3][1] += 5
 
+                # SPI Calculations
                 cur_credits += int(row[3])
-                val += int(row[3]) * grades[row[4]]
+                val += int(row[3]) * grades[row[4].strip()]
                 cnt += 1
 
-                if cnt == courses_cnt[row[0]][sem_no - 1]:
+                if cnt == courses_cnt[roll][sem_no - 1]:
                     credits.append(cur_credits)
                     spi.append(round(val / cur_credits, 2))
 
+                    # CPI Calculations
                     sem_cpi = 0
                     prefix_credits = 0
                     for itr in range(0, len(spi)):
@@ -250,8 +251,6 @@ with open('sample_input/grades.csv') as csvFile:
                         curY += 10
                         newY = curY + (287 - curY) / 2
                         pdf.signature(newY)
-                        print(spi, credits)
+                        pdf.output(f'transcriptsIITP/{roll}.pdf')
                     cnt = 0
 
-
-pdf.output('test.pdf')
